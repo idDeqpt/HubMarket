@@ -9,6 +9,7 @@ add_executable(${PROJECT_NAME}
 	source/main.cpp
 	source/network/Address.cpp
 	source/network/URL.cpp
+	source/network/HTTP.cpp
 	source/network/HTTPServer.cpp
 	bt.rc
 )

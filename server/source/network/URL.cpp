@@ -29,8 +29,36 @@ Network::URL::URL(std::string scheme, Address host, std::string path)
 
 Network::URL::URL(std::string url)
 {
-	scheme = url.substr(0, url.find("://"));
-	
+	int pointer_back = 0;
+	int pointer_front = url.find("://");
+	scheme = url.substr(0, pointer_front);
+	pointer_back = pointer_front + 3;
+
+	pointer_front = url.find("/", pointer_back + 1);
+	host = Address(url.substr(pointer_back, pointer_front - pointer_back));
+	if (pointer_front == std::string::npos)
+	{
+		path = "";
+		return;
+	}
+	pointer_back = pointer_front + 1;
+
+	pointer_front = url.find("?", pointer_back + 1);
+	if (pointer_front == std::string::npos)
+	{
+		path = url.substr(pointer_back, url.length() - pointer_back);
+		return;
+	}
+
+	path = url.substr(pointer_back, pointer_front - pointer_back);
+	pointer_back = pointer_front + 1;
+	url += "&";
+	for (pointer_front = url.find("&", pointer_back + 1); pointer_front != std::string::npos; pointer_front = url.find("&", pointer_back + 1))
+	{
+		int equel_pos = url.find("=", pointer_back);
+		params[url.substr(pointer_back, equel_pos - pointer_back)] = url.substr(equel_pos + 1, pointer_front - equel_pos - 1);
+		pointer_back = pointer_front;
+	}
 }
 
 
