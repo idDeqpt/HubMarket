@@ -1,0 +1,25 @@
+# CMake generation dependency list for this directory.
+C:/IDE's/CMake/share/cmake-3.29/Modules/CMakeCInformation.cmake
+C:/IDE's/CMake/share/cmake-3.29/Modules/CMakeCXXInformation.cmake
+C:/IDE's/CMake/share/cmake-3.29/Modules/CMakeCommonLanguageInclude.cmake
+C:/IDE's/CMake/share/cmake-3.29/Modules/CMakeGenericSystem.cmake
+C:/IDE's/CMake/share/cmake-3.29/Modules/CMakeInitializeConfigs.cmake
+C:/IDE's/CMake/share/cmake-3.29/Modules/CMakeLanguageInformation.cmake
+C:/IDE's/CMake/share/cmake-3.29/Modules/CMakeRCInformation.cmake
+C:/IDE's/CMake/share/cmake-3.29/Modules/CMakeSystemSpecificInformation.cmake
+C:/IDE's/CMake/share/cmake-3.29/Modules/CMakeSystemSpecificInitialize.cmake
+C:/IDE's/CMake/share/cmake-3.29/Modules/Compiler/CMakeCommonCompilerMacros.cmake
+C:/IDE's/CMake/share/cmake-3.29/Modules/Compiler/MSVC-C.cmake
+C:/IDE's/CMake/share/cmake-3.29/Modules/Compiler/MSVC-CXX.cmake
+C:/IDE's/CMake/share/cmake-3.29/Modules/Compiler/MSVC.cmake
+C:/IDE's/CMake/share/cmake-3.29/Modules/Platform/Windows-Initialize.cmake
+C:/IDE's/CMake/share/cmake-3.29/Modules/Platform/Windows-MSVC-C.cmake
+C:/IDE's/CMake/share/cmake-3.29/Modules/Platform/Windows-MSVC-CXX.cmake
+C:/IDE's/CMake/share/cmake-3.29/Modules/Platform/Windows-MSVC.cmake
+C:/IDE's/CMake/share/cmake-3.29/Modules/Platform/Windows.cmake
+C:/IDE's/CMake/share/cmake-3.29/Modules/Platform/WindowsPaths.cmake
+C:/Projects/C++/HubMarket/server/CMakeLists.txt
+C:/Projects/C++/HubMarket/server/build/CMakeFiles/3.29.3/CMakeCCompiler.cmake
+C:/Projects/C++/HubMarket/server/build/CMakeFiles/3.29.3/CMakeCXXCompiler.cmake
+C:/Projects/C++/HubMarket/server/build/CMakeFiles/3.29.3/CMakeRCCompiler.cmake
+C:/Projects/C++/HubMarket/server/build/CMakeFiles/3.29.3/CMakeSystem.cmake
