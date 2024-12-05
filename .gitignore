@@ -1,2 +1,2 @@
-server/bin
-server/build
+/server/bin/
+/server/build/
