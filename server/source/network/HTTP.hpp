@@ -11,35 +11,27 @@ namespace Network
 	class HTTP
 	{
 	public:
-		std::string http_version;
 		Dictionary<std::string, std::string> headers;
+		Dictionary<std::string, std::string> start_line;
+		std::string body;
 
 		HTTP();
-
-		virtual std::string toString() = 0;
+		HTTP(std::string message);
+		std::string toString();
 	};
 
 	class HTTPRequest : public HTTP
 	{
 	public:
-		std::string method;
-		std::string uri;
-
 		HTTPRequest();
 		HTTPRequest(std::string request);
-		std::string toString();
 	};
 
-	class HTTPResponse : public HTTPRequest
+	class HTTPResponse : public HTTP
 	{
 	public:
-		std::string status_code;
-		std::string status_comment;
-		std::string body;
-
 		HTTPResponse();
 		HTTPResponse(std::string response);
-		std::string toString();
 
 	};
 }

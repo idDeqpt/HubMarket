@@ -1,11 +1,54 @@
 #include "HTTP.hpp"
 
+#include <string>
+
 #include "../Dictionary.hpp"
 
 
 Network::HTTP::HTTP()
 {
-	http_version = "";
+	body = "";
+}
+
+Network::HTTP::HTTP(std::string message)
+{
+	start_line = {
+		DictItem<std::string, std::string>("0", ""),
+		DictItem<std::string, std::string>("1", ""),
+		DictItem<std::string, std::string>("2", "")
+	};
+
+	int body_pos = (message.find("\r\n\r\n\r\n") == std::string::npos) ? std::string::npos : (message.find("\r\n\r\n") + 6);
+	int pointer_begin = 0;
+	int pointer_end = message.find(" ");
+	start_line.getItemPtr(0).value = message.substr(0, pointer_end);
+	pointer_begin = pointer_end + 1;
+
+	pointer_end = message.find(" ", pointer_begin + 1);
+	start_line.getItemPtr(1).value = message.substr(pointer_begin, pointer_end - pointer_begin);
+	pointer_begin = pointer_end + 1;
+
+	pointer_end = message.find("\r\n", pointer_begin + 1);
+	start_line.getItemPtr(2).value = message.substr(pointer_begin, pointer_end - pointer_begin);
+	pointer_begin = pointer_end + 2;
+
+	int stop_point = (body_pos == std::string::npos) ? message.length() : (body_pos - 6);
+	for (pointer_end = message.find("\r\n", pointer_begin + 1); (pointer_end != std::string::npos) && (pointer_begin < stop_point); pointer_end = message.find("\r\n", pointer_begin + 1))
+	{
+		int sep_pos = message.find(": ", pointer_begin);
+		headers[message.substr(pointer_begin, sep_pos - pointer_begin)] = message.substr(sep_pos + 2, pointer_end - sep_pos - 2);
+		pointer_begin = pointer_end + 2;
+	}
+
+	body = (body_pos != std::string::npos) ? message.substr(body_pos, message.length() - body_pos) : "";
+}
+
+std::string Network::HTTP::toString()
+{
+	std::string message = start_line.getItemPtr(0).value + " " + start_line.getItemPtr(1).value + " " + start_line.getItemPtr(2).value + "\r\n";
+	for (unsigned int i = 0; i < headers.getSize(); i++)
+		message += headers.getItemPtr(i).key + ": " + headers.getItemPtr(i).value + "\r\n";
+	return message + ((body.length()) ? ("\r\n\r\n" + body) : "");
 }
 
 
@@ -15,33 +58,23 @@ Network::HTTPRequest::HTTPRequest() : HTTP()
 
 }
 
-Network::HTTPRequest::HTTPRequest(std::string request) : HTTP()
+Network::HTTPRequest::HTTPRequest(std::string request) : HTTP(request)
 {
-	int pointer_front = request.find(" ");
-	int pointer_back = 0;
-	method = request.substr(0, pointer_front);
-	pointer_back = pointer_front + 1;
-
-	pointer_front = request.find(" ", pointer_back + 1);
-	uri = request.substr(pointer_back, pointer_front - pointer_back);
-	pointer_back = pointer_front + 1;
-
-	pointer_front = request.find("\r\n", pointer_back + 1);
-	http_version = request.substr(pointer_back, pointer_front - pointer_back);
-	pointer_back = pointer_front + 2;
-
-	for (pointer_front = request.find("\r\n", pointer_back + 1); pointer_front != std::string::npos; pointer_front = request.find("\r\n", pointer_back + 1))
-	{
-		int sep_pos = request.find(": ", pointer_back);
-		headers[request.substr(pointer_back, sep_pos - pointer_back)] = request.substr(sep_pos + 2, pointer_front - sep_pos - 2);
-		pointer_back = pointer_front;
-	}
+	start_line.getItemPtr(0).key = "method";
+	start_line.getItemPtr(1).key = "uri";
+	start_line.getItemPtr(2).key = "http-version";
 }
 
-std::string Network::HTTPRequest::toString()
+
+
+Network::HTTPResponse::HTTPResponse() : HTTP()
 {
-	std::string request = method + " " + uri + " " + http_version + "\r\n";
-	for (unsigned int i = 0; i < headers.getSize(); i++)
-		request += headers.getItemPtr(i).key + ": " + headers.getItemPtr(i).value + "\r\n";
-	return request;
+	
+}
+
+Network::HTTPResponse::HTTPResponse(std::string response) : HTTP(response)
+{
+	start_line.getItemPtr(0).key = "http-version";
+	start_line.getItemPtr(1).key = "status-code";
+	start_line.getItemPtr(2).key = "status-comment";
 }

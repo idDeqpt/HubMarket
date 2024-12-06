@@ -12,30 +12,28 @@
 #include "Address.hpp"
 
 
-std::string Network::default_server_request_handler(std::string request)
+Network::HTTPResponse Network::default_server_request_handler(HTTPRequest request)
 {
-    //return query;
+    HTTPResponse response;
+    
+    response.body = "<title>Test C++ HTTP Server</title>\n\
+                     <h1>Test page</h1>\n\
+                     <a>URI: " + request.start_line["uri"] + "<a>\
+                     <p>This is body of the test page...</p>\n\
+                     <h2>Request headers</h2>\n\
+                     <pre>" + request.toString() + "</pre>\n\
+                     <em><small>Test C++ Http Server</small></em>\n";
 
-    std::stringstream response; // сюда будет записываться ответ клиенту
-    std::stringstream response_body; // тело ответа
+    response.start_line["http-version"] = "HTTP/1.1";
+    response.start_line["status-code"] = "200";
+    response.start_line["status-comment"] = "OK";
 
-    // Данные успешно получены
-    // формируем тело ответа (HTML)
-    response_body << "<title>Test C++ HTTP Server</title>\n"
-        << "<h1>Test page</h1>\n"
-        << "<p>This is body of the test page...</p>\n"
-        << "<h2>Request headers</h2>\n"
-        << "<pre>" << request << "</pre>\n"
-        << "<em><small>Test C++ Http Server</small></em>\n";
+    response.headers["Version"] = "HTTP/1.1";
+    response.headers["Content-Type"] = "text/html; charset=utf-8";
+    response.headers["Version"] = "HTTP/1.1";
+    response.headers["Content-Length"] = std::to_string(response.body.length());
 
-    // Формируем весь ответ вместе с заголовками
-    response << "HTTP/1.1 200 OK\r\n"
-        << "Version: HTTP/1.1\r\n"
-        << "Content-Type: text/html; charset=utf-8\r\n"
-        << "Content-Length: " << response_body.str().length()
-        << "\r\n\r\n"
-        << response_body.str();
-    return response.str();
+    return response;
 }
 
 
@@ -76,7 +74,10 @@ int Network::HTTPServer::init(int port, bool localhost)
     hints.ai_flags = AI_PASSIVE;
 
     if (localhost)
+    {
+        self_address.port = port;
         result = getaddrinfo("127.0.0.1", std::to_string(port).c_str(), &hints, &this->addr);
+    }
     else
     {
         initSelfAddress(port);
@@ -115,7 +116,7 @@ int Network::HTTPServer::init(int port, bool localhost)
     }
 }
 
-void Network::HTTPServer::setRequestHandler(std::string (*new_request_handler)(std::string))
+void Network::HTTPServer::setRequestHandler(HTTPResponse (*new_request_handler)(HTTPRequest request))
 {
     request_handler = new_request_handler;
 }
@@ -148,7 +149,7 @@ int Network::HTTPServer::listen_s()
         std::cerr << "connection closed...\n";
     } else if (result > 0) {
         
-        std::string response = request_handler(std::string(buf));
+        std::string response = request_handler(HTTPRequest(std::string(buf))).toString();
         // Отправляем ответ клиенту с помощью функции send
         result = send(client_socket, response.c_str(), response.length(), 0);
 

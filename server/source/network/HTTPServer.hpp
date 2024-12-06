@@ -10,11 +10,12 @@
 #include <thread>
 
 #include "Address.hpp"
+#include "HTTP.hpp"
 
 
 namespace Network
 {
-    std::string default_server_request_handler(std::string query);
+    HTTPResponse default_server_request_handler(HTTPRequest request);
 
     class HTTPServer
     {
@@ -23,7 +24,7 @@ namespace Network
         ~HTTPServer();
 
         int init(int port, bool localhost = false);
-        void setRequestHandler(std::string (*new_request_handler)(std::string));
+        void setRequestHandler(HTTPResponse (*new_request_handler)(HTTPRequest));
 
         Address getSelfAddress();
 
@@ -33,7 +34,7 @@ namespace Network
         int listen_socket;
         struct addrinfo* addr;
         Address self_address;
-        std::string (*request_handler)(std::string) = default_server_request_handler;
+        HTTPResponse (*request_handler)(HTTPRequest) = default_server_request_handler;
 
         void initSelfAddress(int port);
     };
