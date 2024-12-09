@@ -1,16 +1,18 @@
 cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 
 set(PROJECT_NAME HubMarket_server)
+set(PATH_TO_LIB ../lib)
 
 project(${PROJECT_NAME})
 
+include_directories(${PATH_TO_LIB})
 
 add_executable(${PROJECT_NAME}
 	source/main.cpp
-	source/network/Address.cpp
-	source/network/URL.cpp
-	source/network/HTTP.cpp
-	source/network/HTTPServer.cpp
+	${PATH_TO_LIB}/network/Address.cpp
+	${PATH_TO_LIB}/network/URL.cpp
+	${PATH_TO_LIB}/network/HTTP.cpp
+	${PATH_TO_LIB}/network/HTTPServer.cpp
 	bt.rc
 )
 

@@ -1,7 +1,3 @@
-mkdir build
-cd build
-
-cmake ..
-cmake --build .
+call GenerateModule.bat
 
 pause
