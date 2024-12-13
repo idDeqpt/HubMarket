@@ -34,6 +34,7 @@ public:
 	DictItem<Key_T, Value_T>& getItemPtr(unsigned int index);
 
 	void operator=(std::initializer_list<DictItem<Key_T, Value_T>> list);
+	void operator=(Dictionary<Key_T, Value_T>& another);
 	Value_T& operator[](Key_T key);
 
 protected:
@@ -116,8 +117,8 @@ int Dictionary<Key_T, Value_T>::getIndex(Key_T key)
 template <typename Key_T, typename Value_T>
 DictItem<Key_T, Value_T>& Dictionary<Key_T, Value_T>::getItemPtr(unsigned int index)
 {
-	if (index >= items.size())
-		items.resize(index + 1);
+	//if (index >= items.size())
+	//	items.resize(index + 1);
 	return items[index];
 }
 
@@ -128,6 +129,13 @@ void Dictionary<Key_T, Value_T>::operator=(std::initializer_list<DictItem<Key_T,
 	items.resize(list.size());
 	for (unsigned int i = 0; i < list.size(); i++)
 		items[i] = *(list.begin() + i);
+}
+
+template <typename Key_T, typename Value_T>
+void Dictionary<Key_T, Value_T>::operator=(Dictionary<Key_T, Value_T>& another)
+{
+	items.resize(another.getSize());
+	std::copy(items.begin(), items.end(), another.items.begin());
 }
 
 template <typename Key_T, typename Value_T>

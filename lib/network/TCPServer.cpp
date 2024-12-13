@@ -1,8 +1,9 @@
-#include "HTTPServer.hpp"
+#include "TCPServer.hpp"
 
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <windows.h>
 
 #define _WIN32_WINNT 0x501
 #include <WinSock2.h>
@@ -11,42 +12,25 @@
 
 #include "Address.hpp"
 #include "ServerSessionData.hpp"
+#include "Timer.hpp"
 
 
-Network::HTTPResponse Network::default_server_request_handler(HTTPRequest request)
+std::string Network::default_server_request_handler(std::string request)
 {
-    HTTPResponse response;
-    
-    response.body = "<title>Test C++ HTTP Server</title>\n\
-                     <h1>Test page</h1>\n\
-                     <a>URI: " + request.start_line["uri"] + "<a>\
-                     <p>This is body of the test page...</p>\n\
-                     <h2>Request headers</h2>\n\
-                     <pre>" + request.toString() + "</pre>\n\
-                     <em><small>Test C++ Http Server</small></em>\n";
-
-    response.start_line["http-version"] = "HTTP/1.1";
-    response.start_line["status-code"] = "200";
-    response.start_line["status-comment"] = "OK";
-
-    response.headers["Version"] = "HTTP/1.1";
-    response.headers["Content-Type"] = "text/html; charset=utf-8";
-    response.headers["Version"] = "HTTP/1.1";
-    response.headers["Content-Length"] = std::to_string(response.body.length());
+    std::string response = "Response: " + request;
 
     return response;
 }
 
 
-Network::HTTPServer::HTTPServer()
+Network::TCPServer::TCPServer()
 {
-    last_requested_session_data = 0;
     //available_threads_count = std::thread::hardware_concurrency();
     inited = false;
     started = false;
 }
 
-Network::HTTPServer::~HTTPServer()
+Network::TCPServer::~TCPServer()
 {
     stop();
     closesocket(this->listen_socket);
@@ -55,7 +39,7 @@ Network::HTTPServer::~HTTPServer()
 }
 
 
-int Network::HTTPServer::init(int port, bool localhost)
+int Network::TCPServer::init(int port, bool localhost)
 {
     if (inited)
         return 0;
@@ -118,66 +102,49 @@ int Network::HTTPServer::init(int port, bool localhost)
     }
 
     inited = true;
+    return 0;
 }
 
-bool Network::HTTPServer::start(int threads_count)
+bool Network::TCPServer::start(int threads_count)
 {
     if (!inited || started)
         return false;
+
     started = true;
-
-    //if ((threads_count > available_threads_count) || (threads_count == -1))
-    //    threads_count = available_threads_count;
-    //else if (threads_count < 1)
-    //    threads_count = 1;
-
-    //listen_threads.resize(threads_count);
-    //for (unsigned int i = 0; i < listen_threads.size(); i++)
-    //    listen_threads[i] = std::thread{&HTTPServer::thread_method, this};
-    listen_thread = std::thread{&HTTPServer::thread_method, this};
+    listen_handler_thread = std::thread{&TCPServer::listen_handler, this};
 
     return true;
 }
 
-bool Network::HTTPServer::stop()
+bool Network::TCPServer::stop()
 {
     if (!inited || !started)
         return false;
-    started = false;
 
-    //for (unsigned int i = 0; i < listen_threads.size(); i++)
-    //    listen_threads[i].join();
-    listen_thread.join();
+    started = false;
+    listen_handler_thread.join();
+    for (unsigned int i = 0; i < listen_threads.size(); i++)
+        listen_threads[i].join();
+    listen_threads.clear();
 
     return true;
 }
 
 
-void Network::HTTPServer::setRequestHandler(HTTPResponse (*new_request_handler)(HTTPRequest request))
+void Network::TCPServer::setRequestHandler(std::string (*new_request_handler)(std::string request))
 {
     request_handler = new_request_handler;
 }
 
 
-Network::Address Network::HTTPServer::getSelfAddress()
+Network::Address Network::TCPServer::getSelfAddress()
 {
     return self_address;
 }
 
 
-bool Network::HTTPServer::hasNewSessionData()
-{
-   return last_requested_session_data < sessions_data.size();
-}
 
-Network::ServerSessionData Network::HTTPServer::getNextSessionData()
-{
-    return (hasNewSessionData()) ? sessions_data[last_requested_session_data++] : ServerSessionData();
-}
-
-
-
-void Network::HTTPServer::initSelfAddress(int port)
+void Network::TCPServer::initSelfAddress(int port)
 {
     char hostname[128];  
     hostent * host_info;
@@ -193,7 +160,8 @@ void Network::HTTPServer::initSelfAddress(int port)
     self_address = Address(IP(self_addr), port);
 }
 
-int Network::HTTPServer::listen_method()
+/*
+int Network::TCPServer::listen_method()
 {
     if (!started)
         return 0;
@@ -223,12 +191,9 @@ int Network::HTTPServer::listen_method()
         // соединение закрыто клиентом
         std::cerr << "connection closed...\n";
     } else if (result > 0) {
-        HTTPRequest request = HTTPRequest(std::string(buf));
-        HTTPResponse response = request_handler(request);
-        std::string response_str = response.toString();
+        std::string response_str = request_handler(std::string(buf));
 
         result = send(client_socket, response_str.c_str(), response_str.length(), 0);
-        sessions_data.push_back(ServerSessionData(sessions_data.size(), request.toString(), response_str));
 
         if (result == SOCKET_ERROR) {
             // произошла ошибка при отправле данных
@@ -237,10 +202,45 @@ int Network::HTTPServer::listen_method()
         // Закрываем соединение к клиентом
         closesocket(client_socket);
     }
+}*/
+
+void Network::TCPServer::listen_handler()
+{
+    fd_set read_s;
+    timeval time_out;
+    time_out.tv_sec = 0;
+    time_out.tv_usec = 200000; //Таймаут 0.2 секунды.
+    while (started)
+    {
+        FD_ZERO(&read_s);
+        FD_SET(this->listen_socket, &read_s);
+        if (select(0, &read_s, NULL, NULL, &time_out) > 0)
+        {
+            int client_socket = accept(this->listen_socket, NULL, NULL);
+
+            this->listen_threads.resize(this->listen_threads.size() + 1);
+            this->listen_threads.back() = std::thread{&TCPServer::client_handler, this, client_socket};
+
+            /*
+            std::cout << "s: " << this->listen_threads.size() << std::endl;
+            for (int i = this->listen_threads.size() - 1; i >= 0; i--)
+            {
+                if (this->listen_threads[i].joinable())
+                {
+                    this->listen_threads[i].join();
+                    this->listen_threads.erase(this->listen_threads.begin() + i);
+                }
+            }*/
+        }
+    }
 }
 
-void Network::HTTPServer::thread_method()
+void Network::TCPServer::client_handler(int client_socket)
 {
-    while (started)
-        listen_method();
+    std::cout << "Started client " << client_socket << std::endl;
+    Sleep(10000);
+
+    std::cout << "Finished client " << client_socket << std::endl;
+
+    closesocket(client_socket);
 }

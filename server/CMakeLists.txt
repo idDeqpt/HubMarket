@@ -9,10 +9,13 @@ include_directories(${PATH_TO_LIB})
 
 add_executable(${PROJECT_NAME}
 	source/main.cpp
+	${PATH_TO_LIB}/Timer.cpp
 	${PATH_TO_LIB}/network/Address.cpp
 	${PATH_TO_LIB}/network/URL.cpp
 	${PATH_TO_LIB}/network/HTTP.cpp
+	${PATH_TO_LIB}/network/ServerSessionData.cpp
 	${PATH_TO_LIB}/network/HTTPServer.cpp
+	${PATH_TO_LIB}/network/TCPServer.cpp
 	bt.rc
 )
 
