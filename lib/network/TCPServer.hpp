@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "Address.hpp"
+#include "ServerSessionData.hpp"
 
 
 namespace Network
@@ -31,12 +32,16 @@ namespace Network
 
         Address getSelfAddress();
 
+        bool hasNewSessionData();
+        ServerSessionData getNextSessionData();
+
     protected:
         bool inited, started;
         int listen_socket;
         struct addrinfo* addr;
         Address self_address;
-        //unsigned int available_threads_count;
+        int last_requested_session_data;
+        std::vector<ServerSessionData> sessions_data;
         std::thread listen_handler_thread;
         std::vector<std::thread> listen_threads;
         std::string (*request_handler)(std::string) = default_server_request_handler;

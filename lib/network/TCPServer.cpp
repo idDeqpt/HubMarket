@@ -25,6 +25,7 @@ std::string Network::default_server_request_handler(std::string request)
 
 Network::TCPServer::TCPServer()
 {
+    last_requested_session_data = 0;
     //available_threads_count = std::thread::hardware_concurrency();
     inited = false;
     started = false;
@@ -42,7 +43,7 @@ Network::TCPServer::~TCPServer()
 int Network::TCPServer::init(int port, bool localhost)
 {
     if (inited)
-        return 0;
+        return 1;
 
     WSADATA wsaData;
     int result = WSAStartup(MAKEWORD(2, 2), &wsaData);
@@ -84,9 +85,7 @@ int Network::TCPServer::init(int port, bool localhost)
         return 1;
     }
 
-    result = bind(this->listen_socket, addr->ai_addr, (int)addr->ai_addrlen);
-
-    if (result == SOCKET_ERROR) {
+    if (bind(this->listen_socket, addr->ai_addr, (int)addr->ai_addrlen) == SOCKET_ERROR) {
         std::cerr << "bind failed with error: " << WSAGetLastError() << "\n";
         freeaddrinfo(this->addr);
         closesocket(this->listen_socket);
@@ -143,6 +142,17 @@ Network::Address Network::TCPServer::getSelfAddress()
 }
 
 
+bool Network::TCPServer::hasNewSessionData()
+{
+   return last_requested_session_data < sessions_data.size();
+}
+
+Network::ServerSessionData Network::TCPServer::getNextSessionData()
+{
+    return (hasNewSessionData()) ? sessions_data[last_requested_session_data++] : ServerSessionData();
+}
+
+
 
 void Network::TCPServer::initSelfAddress(int port)
 {
@@ -159,50 +169,6 @@ void Network::TCPServer::initSelfAddress(int port)
     self_addr.s_addr = *(u_long*)host_info->h_addr_list[0];
     self_address = Address(IP(self_addr), port);
 }
-
-/*
-int Network::TCPServer::listen_method()
-{
-    if (!started)
-        return 0;
-
-    // Принимаем входящие соединения
-    int client_socket = accept(this->listen_socket, NULL, NULL);
-    if (client_socket == INVALID_SOCKET)
-    {
-        std::cerr << "accept failed: " << WSAGetLastError() << "\n";
-        closesocket(this->listen_socket);
-        WSACleanup();
-        return 1;
-    }
-
-    const int max_client_buffer_size = 1024;
-    char buf[max_client_buffer_size];
-
-    int result = recv(client_socket, buf, max_client_buffer_size, 0);
-    buf[result] = '\0';
-    //std::cout << buf << std::endl;
-
-    if (result == SOCKET_ERROR) {
-        // ошибка получения данных
-        std::cerr << "recv failed: " << result << "\n";
-        closesocket(client_socket);
-    } else if (result == 0) {
-        // соединение закрыто клиентом
-        std::cerr << "connection closed...\n";
-    } else if (result > 0) {
-        std::string response_str = request_handler(std::string(buf));
-
-        result = send(client_socket, response_str.c_str(), response_str.length(), 0);
-
-        if (result == SOCKET_ERROR) {
-            // произошла ошибка при отправле данных
-            std::cerr << "send failed: " << WSAGetLastError() << "\n";
-        }
-        // Закрываем соединение к клиентом
-        closesocket(client_socket);
-    }
-}*/
 
 void Network::TCPServer::listen_handler()
 {
@@ -237,10 +203,38 @@ void Network::TCPServer::listen_handler()
 
 void Network::TCPServer::client_handler(int client_socket)
 {
-    std::cout << "Started client " << client_socket << std::endl;
-    Sleep(10000);
+    //std::cout << "Start " << client_socket << std::endl;
+    fd_set read_s;
+    timeval time_out;
+    time_out.tv_sec = 5;
+    FD_ZERO(&read_s);
+    FD_SET(client_socket, &read_s);
+    if (select(0, &read_s, NULL, NULL, &time_out) > 0)
+    {
+        const int max_client_buffer_size = 1024;
+        char buf[max_client_buffer_size];
 
-    std::cout << "Finished client " << client_socket << std::endl;
+        int result = recv(client_socket, buf, max_client_buffer_size, 0);
+        buf[result] = '\0';
+        std::string request = buf;
+        //std::cout << buf << std::endl;
+
+        if (result == SOCKET_ERROR)
+            std::cerr << "recv failed: " << result << "\n";
+        else if (result == 0)
+            std::cerr << "connection closed...\n";
+        else if (result > 0)
+        {
+            std::string response = request_handler(request);
+            result = send(client_socket, response.c_str(), response.length(), 0);
+            sessions_data.push_back(ServerSessionData(sessions_data.size(), request, response));
+            //std::cout << sessions_data.size() << "\n";
+
+            if (result == SOCKET_ERROR)
+                std::cerr << "send failed: " << WSAGetLastError() << "\n";
+        }
+    }
 
     closesocket(client_socket);
+    //std::cout << "Finish " << client_socket << std::endl;
 }

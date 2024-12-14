@@ -1,9 +1,94 @@
 #include "URL.hpp"
 
 #include <string>
+#include <vector>
+#include <iostream>
 
 #include "Address.hpp"
 #include "../Dictionary.hpp"
+
+
+Network::URI::URI()
+{
+	path.push_back("/");
+}
+
+Network::URI::URI(std::string uri)
+{
+	if (uri.empty() || (uri == "/"))
+	{
+		path.push_back("/");
+		return;
+	}
+
+	if (uri[0] == '/')
+		uri.erase(uri.begin());
+
+	int params_i = uri.find("?");
+	if (params_i == std::string::npos)
+	{
+		uri += "/";
+		params_i = uri.length();
+	}
+	else
+		uri.insert(uri.begin() + params_i++, '/');
+
+	int pointer_begin = 0;
+	int pointer_end;
+	for (pointer_end = uri.find("/", pointer_begin + 1); (pointer_end != std::string::npos) && (pointer_end < params_i); pointer_end = uri.find("/", pointer_begin + 1))
+	{
+		path.push_back(uri.substr(pointer_begin, pointer_end - pointer_begin));
+		pointer_begin = pointer_end + 1;
+	}
+
+	if (params_i == uri.length())
+		return;
+
+	uri += "&";
+	pointer_begin = params_i + 1;
+	for (pointer_end = uri.find("&", pointer_begin + 1); pointer_end != std::string::npos; pointer_end = uri.find("&", pointer_begin + 1))
+	{
+		int equel_pos = uri.find("=", pointer_begin);
+		params[uri.substr(pointer_begin, equel_pos - pointer_begin)] = uri.substr(equel_pos + 1, pointer_end - equel_pos - 1);
+		pointer_begin = pointer_end + 1;
+	}
+}
+
+
+unsigned int Network::URI::getLength()
+{
+	return path.size();
+}
+
+Dictionary<std::string, std::string>& Network::URI::getParamsPtr()
+{
+	return params;
+}
+
+
+std::string Network::URI::toString()
+{
+	std::string result;
+	for (unsigned int i = 0; i < path.size(); i++)
+		result += "/" + path[i];
+
+	if (params.getSize() > 0)
+	{
+		result += "?";
+		for (unsigned int i = 0; i < params.getSize(); i++)
+			result += params.getItemPtr(i).key + "=" + params.getItemPtr(i).value + "&";
+		result.pop_back();
+	}
+
+	return result;
+}
+
+
+std::string& Network::URI::operator[](int index)
+{
+	return path[index];
+}
+
 
 
 Network::URL::URL()
@@ -20,45 +105,30 @@ Network::URL::URL(std::string scheme, Address host)
 	this->path = "";
 }
 
-Network::URL::URL(std::string scheme, Address host, std::string path)
+Network::URL::URL(std::string scheme, Address host, URI uri)
 {
 	this->scheme = scheme;
 	this->host = host;
-	this->path = path;
+	this->uri = uri;
 }
 
 Network::URL::URL(std::string url)
 {
-	int pointer_back = 0;
-	int pointer_front = url.find("://");
-	scheme = url.substr(0, pointer_front);
-	pointer_back = pointer_front + 3;
+	int pointer_begin = 0;
+	int pointer_end = url.find("://");
+	scheme = url.substr(0, pointer_end);
+	pointer_begin = pointer_end + 3;
 
-	pointer_front = url.find("/", pointer_back + 1);
-	host = Address(url.substr(pointer_back, pointer_front - pointer_back));
-	if (pointer_front == std::string::npos)
+	pointer_end = url.find("/", pointer_begin + 1);
+	host = Address(url.substr(pointer_begin, pointer_end - pointer_begin));
+	if (pointer_end == std::string::npos)
 	{
 		path = "";
 		return;
 	}
-	pointer_back = pointer_front + 1;
+	pointer_begin = pointer_end + 1;
 
-	pointer_front = url.find("?", pointer_back + 1);
-	if (pointer_front == std::string::npos)
-	{
-		path = url.substr(pointer_back, url.length() - pointer_back);
-		return;
-	}
-
-	path = url.substr(pointer_back, pointer_front - pointer_back);
-	pointer_back = pointer_front + 1;
-	url += "&";
-	for (pointer_front = url.find("&", pointer_back + 1); pointer_front != std::string::npos; pointer_front = url.find("&", pointer_back + 1))
-	{
-		int equel_pos = url.find("=", pointer_back);
-		params[url.substr(pointer_back, equel_pos - pointer_back)] = url.substr(equel_pos + 1, pointer_front - equel_pos - 1);
-		pointer_back = pointer_front;
-	}
+	uri = URI(url.substr(pointer_begin, pointer_end - pointer_begin));
 }
 
 
@@ -72,9 +142,9 @@ void Network::URL::setHost(Address new_host)
 	host = new_host;
 }
 
-void Network::URL::setPath(std::string new_path)
+void Network::URL::setURI(URI new_uri)
 {
-	path = new_path;
+	uri = new_uri;
 }
 
 
@@ -88,14 +158,9 @@ Network::Address Network::URL::getHost()
 	return host;
 }
 
-std::string Network::URL::getPath()
+Network::URI Network::URL::getURI()
 {
-	return path;
-}
-
-Dictionary<std::string, std::string>& Network::URL::getParamsPtr()
-{
-	return params;
+	return uri;
 }
 
 
@@ -109,5 +174,5 @@ std::string Network::URL::toString()
 			params_str += params.getItemPtr(i).key + "=" + params.getItemPtr(i).value + "&";
 		params_str.pop_back();
 	}
-	return scheme + "://" + host.toString() + "/" + path + params_str;
+	return scheme + "://" + host.toString() + uri.toString;
 }

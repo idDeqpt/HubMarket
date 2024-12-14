@@ -1,7 +1,7 @@
 #ifndef SERVER_SESSION_DATA_CALSS
 #define SERVER_SESSION_DATA_CALSS
 
-#include "HTTP.hpp"
+#include <string>
 
 
 namespace Network

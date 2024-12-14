@@ -1,6 +1,6 @@
 #include "ServerSessionData.hpp"
 
-#include "HTTP.hpp"
+#include <string>
 
 
 Network::ServerSessionData::ServerSessionData()
