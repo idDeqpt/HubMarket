@@ -19,7 +19,7 @@ namespace Network
 		unsigned int getLength();
 		Dictionary<std::string, std::string>& getParamsPtr();
 
-		std::string toString();
+		std::string toString(bool with_params = true);
 
 		std::string& operator[](int index);
 

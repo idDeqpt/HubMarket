@@ -48,7 +48,7 @@ std::string Network::HTTP::toString()
 	std::string message = start_line.getItemPtr(0).value + " " + start_line.getItemPtr(1).value + " " + start_line.getItemPtr(2).value + "\r\n";
 	for (unsigned int i = 0; i < headers.getSize(); i++)
 		message += headers.getItemPtr(i).key + ": " + headers.getItemPtr(i).value + "\r\n";
-	return message + ((body.length()) ? ("\r\n\r\n" + body) : "");
+	return message + ((body.length()) ? ("\r\n" + body) : "");
 }
 
 

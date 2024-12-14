@@ -26,6 +26,7 @@ public:
 	Dictionary();
 	Dictionary(std::initializer_list<DictItem<Key_T, Value_T>> list);
 
+	bool has(Key_T key);
 	bool add(Key_T key, Value_T value);
 	bool remove(Key_T key);
 
@@ -66,6 +67,7 @@ DictItem<Key_T, Value_T>::DictItem(Key_T key, Value_T value)
 }
 
 
+
 template <typename Key_T, typename Value_T>
 Dictionary<Key_T, Value_T>::Dictionary()
 {
@@ -78,6 +80,12 @@ Dictionary<Key_T, Value_T>::Dictionary(std::initializer_list<DictItem<Key_T, Val
 	*this = list;
 }
 
+
+template <typename Key_T, typename Value_T>
+bool Dictionary<Key_T, Value_T>::has(Key_T key)
+{
+	return getIndex(key) > -1;
+}
 
 template <typename Key_T, typename Value_T>
 bool Dictionary<Key_T, Value_T>::add(Key_T key, Value_T value)

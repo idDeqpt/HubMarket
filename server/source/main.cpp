@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <functional>
 
 #include "Network/URL.hpp"
 #include "Network/HTTP.hpp"
@@ -9,32 +10,6 @@
 #include "Dictionary.hpp"
 #include "Timer.hpp"
 #include <windows.h>
-
-
-std::string messageHandler(std::string request_str)
-{
-    Network::HTTPRequest request(request_str);
-    Network::HTTPResponse response;
-    
-    response.body = "<title>Test C++ HTTP Server</title>\n\
-                     <h1>Test page</h1>\n\
-                     <a>URI: " + request.start_line["uri"] + "<a>\
-                     <p>This is body of the test page...</p>\n\
-                     <h2>Request headers</h2>\n\
-                     <pre>" + request.toString() + "</pre>\n\
-                     <em><small>Test C++ Http Server</small></em>\n";
-
-    response.start_line["http-version"] = "HTTP/1.1";
-    response.start_line["status-code"] = "200";
-    response.start_line["status-comment"] = "OK";
-
-    response.headers["Version"] = "HTTP/1.1";
-    response.headers["Content-Type"] = "text/html; charset=utf-8";
-    response.headers["Version"] = "HTTP/1.1";
-    response.headers["Content-Length"] = std::to_string(response.body.length());
-
-    return response.toString();
-}
 
 
 int main()
@@ -52,8 +27,28 @@ int main()
         DictItem<ServerStates, std::string>(ServerStates::EXIT, "Выход")
     };
 
-    Network::TCPServer server;
-    server.setRequestHandler(messageHandler);
+    std::function<Network::HTTPResponse(Network::HTTPRequest)> f;
+    f = [](Network::HTTPRequest request) -> Network::HTTPResponse
+    {
+        std::cout << request.start_line["uri"] << std::endl;
+        Network::HTTPResponse response;
+
+        response.body = "<p>success</p>";
+
+        response.start_line["http-version"] = "HTTP/1.1";
+        response.start_line["status-code"] = "200";
+        response.start_line["status-comment"] = "OK";
+
+        response.headers["Version"] = "HTTP/1.1";
+        response.headers["Content-Type"] = "text/html; charset=utf-8";
+        response.headers["Version"] = "HTTP/1.1";
+        response.headers["Content-Length"] = std::to_string(response.body.length());
+
+        return response;
+    };
+
+    Network::HTTPServer server;
+    server.addHandler("/", f);
 
     Timer timer;
     while (state != ServerStates::EXIT)
@@ -106,7 +101,6 @@ int main()
 
             case ServerStates::PROCESS:
             {
-                /*
                 if (server.hasNewSessionData())
                 {
                     Network::ServerSessionData session = server.getNextSessionData();
@@ -117,7 +111,7 @@ int main()
                     << session.getResponse() << "\n"
                     << "============================\n"
                     << "Для остановки работы нажмите Space\n\n";
-                }*/
+                }
 
                 //std::cout << "a\n";
                 if (GetAsyncKeyState(VK_SPACE) < 0)

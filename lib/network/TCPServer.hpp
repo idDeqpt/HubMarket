@@ -48,7 +48,7 @@ namespace Network
 
         void initSelfAddress(int port);
         void listen_handler();
-        void client_handler(int client_socket);
+        virtual void client_handler(int client_socket);
     };
 }
 
