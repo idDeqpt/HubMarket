@@ -27,13 +27,16 @@ int main()
         DictItem<ServerStates, std::string>(ServerStates::EXIT, "Выход")
     };
 
-    std::function<Network::HTTPResponse(Network::HTTPRequest)> f;
-    f = [](Network::HTTPRequest request) -> Network::HTTPResponse
+    Network::HTTPServer server;
+    server.addHandler("/", [](Network::HTTPRequest request) -> Network::HTTPResponse
     {
-        std::cout << request.start_line["uri"] << std::endl;
         Network::HTTPResponse response;
+        Network::URI uri(request.start_line["uri"]);
+        std::cout << request.toString() << std::endl;
 
-        response.body = "<p>success</p>";
+        for (unsigned int i = 0; i < uri.getParamsPtr().getSize(); i++)
+            response.body += "<p>" + uri.getParamsPtr().getItemPtr(i).key + ": " + uri.getParamsPtr().getItemPtr(i).value + "</p>";
+        response.body += "<p>success</p>";
 
         response.start_line["http-version"] = "HTTP/1.1";
         response.start_line["status-code"] = "200";
@@ -45,10 +48,7 @@ int main()
         response.headers["Content-Length"] = std::to_string(response.body.length());
 
         return response;
-    };
-
-    Network::HTTPServer server;
-    server.addHandler("/", f);
+    });
 
     Timer timer;
     while (state != ServerStates::EXIT)

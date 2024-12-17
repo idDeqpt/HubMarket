@@ -20,6 +20,7 @@ namespace Network
 
         bool addHandler(std::string path, std::function<HTTPResponse(HTTPRequest)> handler);
         bool removeHandler(std::string path);
+        Dictionary<std::string, std::function<HTTPResponse(HTTPRequest)>>& getHandlersPtr();
 
     protected:
         Dictionary<std::string, std::function<HTTPResponse(HTTPRequest)>> paths_handlers;

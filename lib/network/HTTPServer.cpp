@@ -55,14 +55,17 @@ bool Network::HTTPServer::removeHandler(std::string path)
     return paths_handlers.remove(path);
 }
 
+Dictionary<std::string, std::function<Network::HTTPResponse(Network::HTTPRequest)>>& Network::HTTPServer::getHandlersPtr()
+{
+    return paths_handlers;
+}
+
 
 std::string Network::HTTPServer::http_handler(std::string request)
 {
     HTTPRequest req(request);
     URI uri(req.start_line["uri"]);
     std::string path = uri.toString(false);
-
-    std::cout << "============uri: " << path << std::endl;
 
     if (!paths_handlers.has(path))
         return code_404_handler().toString();
