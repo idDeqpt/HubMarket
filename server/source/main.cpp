@@ -5,7 +5,9 @@
 #include "Network/URL.hpp"
 #include "Network/HTTP.hpp"
 #include "Network/HTTPServer.hpp"
+#include "Network/HTTPRequests.hpp"
 #include "Network/TCPServer.hpp"
+#include "Network/TCPClient.hpp"
 #include "Network/ServerSessionData.hpp"
 #include "Dictionary.hpp"
 #include "Timer.hpp"
@@ -27,6 +29,9 @@ int main()
         DictItem<ServerStates, std::string>(ServerStates::EXIT, "Выход")
     };
 
+
+    //std::cout << Network::Requests::get("https://user-geo-data.wildberries.ru/get-geo-info?currency=RUB&latitude=50&longitude=35&locale=ru") << std::endl;
+
     Network::HTTPServer server;
     server.addHandler("/", [](Network::HTTPRequest request) -> Network::HTTPResponse
     {
@@ -34,8 +39,8 @@ int main()
         Network::URI uri(request.start_line["uri"]);
         std::cout << request.toString() << std::endl;
 
-        for (unsigned int i = 0; i < uri.getParamsPtr().getSize(); i++)
-            response.body += "<p>" + uri.getParamsPtr().getItemPtr(i).key + ": " + uri.getParamsPtr().getItemPtr(i).value + "</p>";
+        for (auto& [key, value] : uri.getParamsPtr())
+            response.body += "<p>" + key + ": " + value + "</p>";
         response.body += "<p>success</p>";
 
         response.start_line["http-version"] = "HTTP/1.1";

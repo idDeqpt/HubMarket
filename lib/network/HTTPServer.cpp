@@ -2,10 +2,14 @@
 
 #include <iostream>
 
+#define _WIN32_WINNT 0x501
+#include <WinSock2.h>
+#include <WS2TCPip.h>
+#pragma comment(lib, "Ws2_32.lib")
+
 #include "TCPServer.hpp"
 #include "HTTP.hpp"
 #include "URL.hpp"
-#include "Dictionary.hpp"
 
 
 Network::HTTPResponse Network::default_404_handler()
@@ -45,17 +49,17 @@ void Network::HTTPServer::set404Handler(HTTPResponse (*new_404_handler)(void))
 }
 
 
-bool Network::HTTPServer::addHandler(std::string path, std::function<HTTPResponse(HTTPRequest)> handler)
+void Network::HTTPServer::addHandler(std::string path, std::function<HTTPResponse(HTTPRequest)> handler)
 {
-    return paths_handlers.add(path, handler);
+    paths_handlers[path] = handler;
 }
 
-bool Network::HTTPServer::removeHandler(std::string path)
+void Network::HTTPServer::removeHandler(std::string path)
 {
-    return paths_handlers.remove(path);
+    paths_handlers.erase(path);
 }
 
-Dictionary<std::string, std::function<Network::HTTPResponse(Network::HTTPRequest)>>& Network::HTTPServer::getHandlersPtr()
+std::unordered_map<std::string, std::function<Network::HTTPResponse(Network::HTTPRequest)>>& Network::HTTPServer::getHandlersPtr()
 {
     return paths_handlers;
 }
@@ -67,7 +71,7 @@ std::string Network::HTTPServer::http_handler(std::string request)
     URI uri(req.start_line["uri"]);
     std::string path = uri.toString(false);
 
-    if (!paths_handlers.has(path))
+    if (paths_handlers.count(path) == 0)
         return code_404_handler().toString();
 
     return paths_handlers[path](req).toString();

@@ -13,23 +13,23 @@ Network::HTTP::HTTP()
 Network::HTTP::HTTP(std::string message)
 {
 	start_line = {
-		DictItem<std::string, std::string>("0", ""),
-		DictItem<std::string, std::string>("1", ""),
-		DictItem<std::string, std::string>("2", "")
+		{"0", ""},
+		{"1", ""},
+		{"2", ""}
 	};
 
 	int body_pos = (message.find("\r\n\r\n\r\n") == std::string::npos) ? std::string::npos : (message.find("\r\n\r\n") + 6);
 	int pointer_begin = 0;
 	int pointer_end = message.find(" ");
-	start_line.getItemPtr(0).value = message.substr(0, pointer_end);
+	start_line["0"] = message.substr(0, pointer_end);
 	pointer_begin = pointer_end + 1;
 
 	pointer_end = message.find(" ", pointer_begin + 1);
-	start_line.getItemPtr(1).value = message.substr(pointer_begin, pointer_end - pointer_begin);
+	start_line["1"] = message.substr(pointer_begin, pointer_end - pointer_begin);
 	pointer_begin = pointer_end + 1;
 
 	pointer_end = message.find("\r\n", pointer_begin + 1);
-	start_line.getItemPtr(2).value = message.substr(pointer_begin, pointer_end - pointer_begin);
+	start_line["2"] = message.substr(pointer_begin, pointer_end - pointer_begin);
 	pointer_begin = pointer_end + 2;
 
 	int stop_point = (body_pos == std::string::npos) ? message.length() : (body_pos - 6);

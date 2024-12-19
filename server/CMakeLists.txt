@@ -14,12 +14,15 @@ add_executable(${PROJECT_NAME}
 	${PATH_TO_LIB}/network/URL.cpp
 	${PATH_TO_LIB}/network/HTTP.cpp
 	${PATH_TO_LIB}/network/ServerSessionData.cpp
-	${PATH_TO_LIB}/network/HTTPServer.cpp
 	${PATH_TO_LIB}/network/TCPServer.cpp
+	${PATH_TO_LIB}/network/TCPClient.cpp
+	${PATH_TO_LIB}/network/HTTPServer.cpp
+	${PATH_TO_LIB}/network/HTTPRequests.cpp
 	bt.rc
 )
 
 
+target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)
 set(dir ${CMAKE_CURRENT_SOURCE_DIR}/bin/)
 set(EXECUTABLE_OUTPUT_PATH ${dir} CACHE PATH "Build directory" FORCE)
 set(LIBRARY_OUTPUT_PATH ${dir} CACHE PATH "Build directory" FORCE)

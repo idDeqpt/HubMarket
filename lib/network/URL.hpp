@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 #include "Address.hpp"
 #include "../Dictionary.hpp"
@@ -17,7 +18,7 @@ namespace Network
 		URI(std::string uri);
 
 		unsigned int getLength();
-		Dictionary<std::string, std::string>& getParamsPtr();
+		std::unordered_map<std::string, std::string>& getParamsPtr();
 
 		std::string toString(bool with_params = true);
 
@@ -25,30 +26,30 @@ namespace Network
 
 	protected:
 		std::vector<std::string> path;
-		Dictionary<std::string, std::string> params;
+		std::unordered_map<std::string, std::string> params;
 	};
 
 	class URL
 	{
 	public:
 		URL();
-		URL(std::string scheme, Address host);
-		URL(std::string scheme, Address host, URI uri);
+		URL(std::string scheme, std::string host);
+		URL(std::string scheme, std::string host, URI uri);
 		URL(std::string url);
 
 		void setScheme(std::string new_scheme);
-		void setHost(Address new_host);
+		void setHost(std::string new_host);
 		void setURI(URI new_uri);
 
 		std::string getScheme();
-		Address getHost();
+		std::string getHost();
 		URI getURI();
 
 		std::string toString();
 
 	protected:
 		std::string scheme;
-		Address host;
+		std::string host;
 		URI uri;
 	};
 }

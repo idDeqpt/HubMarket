@@ -44,12 +44,11 @@ Network::URI::URI(std::string uri)
 	for (int pointer_end = uri.find("&", pointer_begin + 1); pointer_end != std::string::npos; pointer_end = uri.find("&", pointer_begin + 1))
 	{
 		int equel_pos = uri.find("=", pointer_begin);
-		params[uri.substr(pointer_begin, equel_pos - pointer_begin)] = uri.substr(equel_pos + 1, pointer_end - equel_pos - 1);
+		this->params[uri.substr(pointer_begin, equel_pos - pointer_begin)] = uri.substr(equel_pos + 1, pointer_end - equel_pos - 1);
 		pointer_begin = pointer_end + 1;
-		std::cout << pointer_begin << " " << pointer_end << std::endl;
 	}
-	for (unsigned int i = 0; i < params.getSize(); i++)
-		std::cout << params.getItemPtr(i).key << " " << params.getItemPtr(i).value << std::endl;
+	for (auto& [key, value] : this->params)
+		std::cout << key << " " << value << std::endl;
 }
 
 
@@ -58,7 +57,7 @@ unsigned int Network::URI::getLength()
 	return path.size();
 }
 
-Dictionary<std::string, std::string>& Network::URI::getParamsPtr()
+std::unordered_map<std::string, std::string>& Network::URI::getParamsPtr()
 {
 	return params;
 }
@@ -70,11 +69,11 @@ std::string Network::URI::toString(bool with_params)
 	for (unsigned int i = 0; i < path.size(); i++)
 		result += "/" + path[i];
 
-	if (with_params && (params.getSize() > 0))
+	if (with_params && (this->params.size() > 0))
 	{
 		result += "?";
-		for (unsigned int i = 0; i < params.getSize(); i++)
-			result += params.getItemPtr(i).key + "=" + params.getItemPtr(i).value + "&";
+		for (auto& [key, value] : this->params)
+			result += key + "=" + value + "&";
 		result.pop_back();
 	}
 
@@ -92,18 +91,18 @@ std::string& Network::URI::operator[](int index)
 Network::URL::URL()
 {
 	scheme = "http";
-	host = Address(IP(127, 0, 0, 1), 80);
+	host = "localhost";
 	uri = URI();
 }
 
-Network::URL::URL(std::string scheme, Address host)
+Network::URL::URL(std::string scheme, std::string host)
 {
 	this->scheme = scheme;
 	this->host = host;
 	this->uri = URI();
 }
 
-Network::URL::URL(std::string scheme, Address host, URI uri)
+Network::URL::URL(std::string scheme, std::string host, URI uri)
 {
 	this->scheme = scheme;
 	this->host = host;
@@ -118,7 +117,7 @@ Network::URL::URL(std::string url)
 	pointer_begin = pointer_end + 3;
 
 	pointer_end = url.find("/", pointer_begin + 1);
-	host = Address(url.substr(pointer_begin, pointer_end - pointer_begin));
+	host = url.substr(pointer_begin, pointer_end - pointer_begin);
 	if (pointer_end == std::string::npos)
 		return;
 
@@ -132,7 +131,7 @@ void Network::URL::setScheme(std::string new_scheme)
 	scheme = new_scheme;
 }
 
-void Network::URL::setHost(Address new_host)
+void Network::URL::setHost(std::string new_host)
 {
 	host = new_host;
 }
@@ -148,7 +147,7 @@ std::string Network::URL::getScheme()
 	return scheme;
 }
 
-Network::Address Network::URL::getHost()
+std::string Network::URL::getHost()
 {
 	return host;
 }
@@ -161,5 +160,5 @@ Network::URI Network::URL::getURI()
 
 std::string Network::URL::toString()
 {
-	return scheme + "://" + host.toString() + uri.toString();
+	return scheme + "://" + host + uri.toString();
 }

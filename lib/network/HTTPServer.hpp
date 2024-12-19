@@ -2,7 +2,6 @@
 #define NETWORK_HTTP_SERVER
 
 #include "TCPServer.hpp"
-#include "Dictionary.hpp"
 #include "HTTP.hpp"
 
 
@@ -18,12 +17,12 @@ namespace Network
 
         void set404Handler(HTTPResponse (*new_404_handler)(void));
 
-        bool addHandler(std::string path, std::function<HTTPResponse(HTTPRequest)> handler);
-        bool removeHandler(std::string path);
-        Dictionary<std::string, std::function<HTTPResponse(HTTPRequest)>>& getHandlersPtr();
+        void addHandler(std::string path, std::function<HTTPResponse(HTTPRequest)> handler);
+        void removeHandler(std::string path);
+        std::unordered_map<std::string, std::function<HTTPResponse(HTTPRequest)>>& getHandlersPtr();
 
     protected:
-        Dictionary<std::string, std::function<HTTPResponse(HTTPRequest)>> paths_handlers;
+        std::unordered_map<std::string, std::function<HTTPResponse(HTTPRequest)>> paths_handlers;
         HTTPResponse (*code_404_handler)() = default_404_handler;
 
         std::string http_handler(std::string request);

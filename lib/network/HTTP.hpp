@@ -11,8 +11,8 @@ namespace Network
 	class HTTP
 	{
 	public:
-		Dictionary<std::string, std::string> headers;
-		Dictionary<std::string, std::string> start_line;
+		std::unordered_map<std::string, std::string> start_line;
+		std::unordered_map<std::string, std::string> headers;
 		std::string body;
 
 		HTTP();
