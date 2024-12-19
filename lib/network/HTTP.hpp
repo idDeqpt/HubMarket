@@ -2,8 +2,7 @@
 #define NETWORK_HTTP_CLASS
 
 #include <string>
-
-#include "../Dictionary.hpp"
+#include <unordered_map>
 
 
 namespace Network

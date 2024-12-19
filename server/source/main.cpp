@@ -1,6 +1,8 @@
 #include <iostream>
 #include <string>
 #include <functional>
+#include <unordered_map>
+#include <utility>
 
 #include "Network/URL.hpp"
 #include "Network/HTTP.hpp"
@@ -24,13 +26,14 @@ int main()
         PROCESS,
         PAUSE,
     } state = ServerStates::CHOOSE_STATE;
-    Dictionary<ServerStates, std::string> menu_selection_variants = {
-        DictItem<ServerStates, std::string>(ServerStates::INIT, "Запуск"),
-        DictItem<ServerStates, std::string>(ServerStates::EXIT, "Выход")
+
+    std::vector<std::pair<ServerStates, std::string>> menu_selection_variants = {
+        {ServerStates::INIT, "Запуск"},
+        {ServerStates::EXIT, "Выход"}
     };
 
 
-    //std::cout << Network::Requests::get("https://user-geo-data.wildberries.ru/get-geo-info?currency=RUB&latitude=50&longitude=35&locale=ru") << std::endl;
+    std::cout << "|" << Network::Requests::get("http://localhost/?text=c%2B%2B+pair+какой+заголовок&lr=100932&clid=2437996") << "|" << std::endl;
 
     Network::HTTPServer server;
     server.addHandler("/", [](Network::HTTPRequest request) -> Network::HTTPResponse
@@ -63,8 +66,8 @@ int main()
             case ServerStates::CHOOSE_STATE:
             {
                 std::cout << "Выберите действие:\n";
-                for (unsigned int i = 0; i < menu_selection_variants.getSize(); i++)
-                    std::cout << "\t" << i + 1 << ". " + menu_selection_variants.getItemPtr(i).value + ";\n";
+                for (unsigned int i = 0; i < menu_selection_variants.size(); i++)
+                    std::cout << "\t" << i + 1 << ". " + menu_selection_variants[i].second + ";\n";
                 std::cout << "Ввод: ";
 
                 std::string action_str;
@@ -74,8 +77,8 @@ int main()
                 try
                 {
                     int action = stoi(action_str) - 1;
-                    if ((action >= 0) && (action < menu_selection_variants.getSize()))
-                        state = menu_selection_variants.getItemPtr(action).key;
+                    if ((action >= 0) && (action < menu_selection_variants.size()))
+                        state = menu_selection_variants[action].first;
                     else
                         std::cout << "Введено некорректное значение!\n";
                 }

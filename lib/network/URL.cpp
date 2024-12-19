@@ -47,8 +47,6 @@ Network::URI::URI(std::string uri)
 		this->params[uri.substr(pointer_begin, equel_pos - pointer_begin)] = uri.substr(equel_pos + 1, pointer_end - equel_pos - 1);
 		pointer_begin = pointer_end + 1;
 	}
-	for (auto& [key, value] : this->params)
-		std::cout << key << " " << value << std::endl;
 }
 
 
@@ -121,8 +119,8 @@ Network::URL::URL(std::string url)
 	if (pointer_end == std::string::npos)
 		return;
 
-	pointer_begin = pointer_end + 1;
-	uri = URI(url.substr(pointer_begin, pointer_end - pointer_begin));
+	pointer_begin = pointer_end;
+	uri = URI(url.substr(pointer_begin, url.size() - pointer_begin));
 }
 
 

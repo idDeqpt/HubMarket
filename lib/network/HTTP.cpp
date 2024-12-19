@@ -1,8 +1,7 @@
 #include "HTTP.hpp"
 
 #include <string>
-
-#include "../Dictionary.hpp"
+#include <unordered_map>
 
 
 Network::HTTP::HTTP()
@@ -45,9 +44,13 @@ Network::HTTP::HTTP(std::string message)
 
 std::string Network::HTTP::toString()
 {
-	std::string message = start_line.getItemPtr(0).value + " " + start_line.getItemPtr(1).value + " " + start_line.getItemPtr(2).value + "\r\n";
-	for (unsigned int i = 0; i < headers.getSize(); i++)
-		message += headers.getItemPtr(i).key + ": " + headers.getItemPtr(i).value + "\r\n";
+	std::string message = "";
+	for (auto&[key, value] : start_line)
+		message += value + " ";
+	message.pop_back();
+	message += "\r\n";
+	for (auto&[key, value] : headers)
+		message += key + ": " + value + "\r\n";
 	return message + ((body.length()) ? ("\r\n" + body) : "");
 }
 
@@ -60,9 +63,12 @@ Network::HTTPRequest::HTTPRequest() : HTTP()
 
 Network::HTTPRequest::HTTPRequest(std::string request) : HTTP(request)
 {
-	start_line.getItemPtr(0).key = "method";
-	start_line.getItemPtr(1).key = "uri";
-	start_line.getItemPtr(2).key = "http-version";
+	start_line["method"] = start_line["0"];
+	start_line.erase("0");
+	start_line["uri"] = start_line["1"];
+	start_line.erase("1");
+	start_line["http-version"] = start_line["2"];
+	start_line.erase("2");
 }
 
 
@@ -74,7 +80,10 @@ Network::HTTPResponse::HTTPResponse() : HTTP()
 
 Network::HTTPResponse::HTTPResponse(std::string response) : HTTP(response)
 {
-	start_line.getItemPtr(0).key = "http-version";
-	start_line.getItemPtr(1).key = "status-code";
-	start_line.getItemPtr(2).key = "status-comment";
+	start_line["http-version"] = start_line["0"];
+	start_line.erase("0");
+	start_line["status-code"] = start_line["1"];
+	start_line.erase("1");
+	start_line["status-comment"] = start_line["2"];
+	start_line.erase("2");
 }
