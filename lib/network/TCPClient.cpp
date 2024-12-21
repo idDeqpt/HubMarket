@@ -98,10 +98,23 @@ std::string Network::TCPClient::recv()
 	if (this->server_socket == NULL)
 		return "";
 
+	/*
 	const int max_buffer_size = 1024;
 	char buf[max_buffer_size];
 	int bytes = ::recv(this->server_socket, buf, max_buffer_size, NULL);
 	buf[bytes] = '\0';
+	std::cout << buf << std::endl;
+	*/
 
-	return std::string(buf);
+	std::string return_data;
+	const int max_buffer_size = 1024;
+	char buf[max_buffer_size];
+	while (::recv(this->server_socket, buf, max_buffer_size, NULL) > 0)
+	{
+		//std::cout << "BUF: " << buf << std::endl;
+        for (int i = 0; buf[i] >= 32 || buf[i] == '\n' || buf[i] == '\r'; i++)
+            return_data += buf[i];
+	}
+
+	return return_data;
 }

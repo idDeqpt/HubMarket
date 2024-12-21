@@ -36,7 +36,7 @@ Network::URI::URI(std::string uri)
 		}
 	}
 
-	if (params_i == uri.length())
+	if (params_i == std::string::npos)
 		return;
 
 	uri += "&";
@@ -115,6 +115,11 @@ Network::URL::URL(std::string url)
 	pointer_begin = pointer_end + 3;
 
 	pointer_end = url.find("/", pointer_begin + 1);
+	if (pointer_end == std::string::npos)
+	{
+		url += "/";
+		pointer_end = url.size() - 1;
+	}
 	host = url.substr(pointer_begin, pointer_end - pointer_begin);
 	if (pointer_end == std::string::npos)
 		return;
