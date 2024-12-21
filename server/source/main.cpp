@@ -111,8 +111,8 @@ int main()
     };
 
 
-    //std::cout << "|" << Network::Requests::get("http://localhost/?text=c%2B%2B+pair+какой+заголовок&lr=100932&clid=2437996") << "|" << std::endl;
-    std::cout << "|" << Network::Requests::get("https://www.google.com") << "|" << std::endl;
+    std::cout << "|" << Network::Requests::get("https://www.google.com/search/?q=dljvdh&sca_esv=fe962eec8177d20a&sxsrf=ADLYWIIzmsDArvbyJOybBdlj9nE37ajGag%3A1734774333054&source=hp&ei=PY5mZ50c14Xszw_X56ywCg&iflsig=AL9hbdgAAAAAZ2acTaSnMpQN7uENuiCKPZlcsMrdpdqG&ved=0ahUKEwjdron_ybiKAxXXAvsDHdczC6YQ4dUDCBc&uact=5&oq=dljvdh&gs_lp=Egdnd3Mtd2l6IgZkbGp2ZGgyCBAAGIAEGKIEMggQABiABBiiBDIIEAAYgAQYogRIsgZQnwJY3QRwAXgAkAEAmAGeAaAB0waqAQMwLja4AQPIAQD4AQGYAgegAv4GqAIKwgIHECMYJxjqAsICERAuGIAEGLEDGNEDGIMBGMcBwgILEAAYgAQYsQMYgwHCAggQABiABBixA8ICBRAAGIAEwgIOEC4YgAQYsQMYgwEY1ALCAgsQABiABBgBGAoYKsICDxAuGIAEGAEY0QMYxwEYCsICCRAuGIAEGAEYCsICCRAAGIAEGAEYCsICCRAAGIAEGAoYKsICBxAAGIAEGArCAgQQABgewgIIEAAYBRgKGB7CAgYQABgFGB7CAgcQLhiABBgNwgIHEAAYgAQYDZgDE_EFDZfLSqLdvJWSBwMxLjagB70v&sclient=gws-wiz") << "|" << std::endl;
+    //std::cout << "|" << Network::Requests::get("https://www.google.com") << "|" << std::endl;
 
     Network::HTTPServer server;
     server.addHandler("/", [](Network::HTTPRequest request) -> Network::HTTPResponse

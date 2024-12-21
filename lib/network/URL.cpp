@@ -18,22 +18,18 @@ Network::URI::URI(std::string uri)
 	int params_i = uri.find("?");
 
 	std::string path_str = (params_i == std::string::npos) ? uri : uri.substr(0, params_i);
+	std::cout << path_str << std::endl;
 
-	if (path_str.empty() || (path_str == "/"))
-		path.push_back("");
-	else
+	for (int pointer_begin = path_str.find("/"); ;)
 	{
-		path_str += "/";
-		if (path_str[0] == '/')
-			path_str.erase(path_str.begin());
-
-		int pointer_begin = 0;
-		int pointer_end;
-		for (pointer_end = path_str.find("/", pointer_begin + 1); (pointer_end != std::string::npos) && (pointer_end < params_i); pointer_end = path_str.find("/", pointer_begin + 1))
+		int pointer_end = path_str.find("/", pointer_begin + 1);
+		if (pointer_end == std::string::npos)
 		{
-			path.push_back(path_str.substr(pointer_begin, pointer_end - pointer_begin));
-			pointer_begin = pointer_end + 1;
+			path.push_back("");
+			break;
 		}
+		path.push_back(path_str.substr(pointer_begin + 1, pointer_end - pointer_begin - 1));
+		pointer_begin = pointer_end;
 	}
 
 	if (params_i == std::string::npos)

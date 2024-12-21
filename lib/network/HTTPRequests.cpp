@@ -42,6 +42,6 @@ Network::HTTPResponse Network::Requests::get(Network::URL url)
 
 	Network::TCPClient client;
 	client.connect(request.headers["Host"], 80);//((url.getScheme() == "http") ? 80 : 443));
-	client.send("GET / HTTP/1.1\r\nHost: www.google.com\r\nConnection: close\r\n\r\n");//request.toString());
+	client.send(request.toString());
 	return client.recv();
 }
